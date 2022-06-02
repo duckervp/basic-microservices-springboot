@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  service-discovery:
+    image: duckervn/mst-service-discovery:latest
+    environment:
+      SERVER_HOST: service-discovery
+      SERVER_PORT: 3000
+    ports:
+      - 3000:3000
+    build:
+      context: "./service-discovery"
+      dockerfile: "Dockerfile"
+  teacher-service:
+    image: duckervn/mst-teacher-service:latest
+    environment:
+      SERVER_PORT: 3003
+      SERVICE_DISCOVERY_HOST: service-discovery
+      SERVICE_DISCOVERY_PORT: 3000
+    ports:
+      - 3003:3003
+    build:
+      context: "./teacher-service"
+      dockerfile: "Dockerfile"
+  gateway-service:
+    image: duckervn/ms-gateway-service:latest
+    environment:
+      SERVER_PORT: 4000
+      SERVICE_DISCOVERY_HOST: service-discovery
+      SERVICE_DISCOVERY_PORT: 3000
+      SERVICE_0_NAME: teacher-service
+      SERVICE_0_HOST: teacher-service
+      SERVICE_0_PORT: 3003
+      SERVICE_1_NAME: lecturer-service
+      SERVICE_1_HOST: 10.22.5.133
+      SERVICE_1_PORT: 3001
+      SERVICE_2_NAME: student-service
+      SERVICE_2_HOST: 10.22.5.136
+      SERVICE_2_PORT: 8080
+    ports:
+      - 4000:4000
+    build:
+      context: "./gateway-service"
+      dockerfile: "Dockerfile"
+    depends_on:
+      - teacher-service
